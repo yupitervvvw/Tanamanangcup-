@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard - Tanamanang Cup</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="neon-bg">
+  <div class="neon-card">
+    <h1 class="neon-title">Tanamanang Cup - Dashboard</h1>
+    <div class="neon-subtitle" id="role-info"></div>
+
+    <a href="daftar-tim.html" class="menu-link">📋 Daftar Tim</a>
+    <a href="klasemen.html" class="menu-link">📊 Klasemen Grup</a>
+    <a href="16besar.html" class="menu-link">⚔️ Babak 16 Besar</a>
+    <a href="8besar.html" class="menu-link">🎯 Babak 8 Besar</a>
+    <a href="semifinal.html" class="menu-link">🏆 Babak Semifinal</a>
+    <a href="final.html" class="menu-link">🏅 Babak Final</a>
+    <a href="thechampion.html" class="menu-link">🎉 The Champion</a>
+    <button onclick="logout()" class="logout-btn">Logout</button>
+    
+  </div>
+
+  <script>
+    const loggedIn = localStorage.getItem('loggedIn');
+    const role = localStorage.getItem('role');
+    if (!loggedIn || loggedIn !== 'true') {
+      window.location.href = 'index.html';
+    }
+    document.getElementById('role-info').textContent = `Anda login sebagai: ${role.toUpperCase()}`;
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    }
+  
+  </script>
+</body>
+</html>

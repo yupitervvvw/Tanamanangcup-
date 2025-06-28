@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Final - Tanamanang Cup</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="neon-bg">
+
+  <div class="neon-card">
+    <h1 class="neon-title">Babak Final - Tanamanang Cup</h1>
+    <button onclick="logout()" class="logout-btn">Logout</button>
+    <button onclick="toDashboard()" class="logout-btn">🏠 Kembali ke Dashboard</button>
+    <div id="role-info" class="neon-subtitle"></div>
+
+    <table id="matchTable">
+      <thead>
+        <tr>
+          <th>Pertandingan</th>
+          <th>Tim A</th>
+          <th>Skor A</th>
+          <th>VS</th>
+          <th>Skor B</th>
+          <th>Tim B</th>
+        </tr>
+      </thead>
+      <tbody id="matchList"></tbody>
+    </table>
+
+    <div id="admin-actions"></div>
+  </div>
+
+  <script>
+    const loggedIn = localStorage.getItem('loggedIn');
+    const role = localStorage.getItem('role');
+
+    if (!loggedIn || loggedIn !== 'true') {
+      window.location.href = 'index.html';
+    }
+
+    document.getElementById('role-info').textContent = `Anda login sebagai: ${role.toUpperCase()}`;
+
+    const matchList = document.getElementById('matchList');
+    let match = JSON.parse(localStorage.getItem('finalMatch')) || {
+      teamA: '', teamB: '', scoreA: '', scoreB: ''
+    };
+
+    function saveMatch() {
+      localStorage.setItem('finalMatch', JSON.stringify(match));
+    }
+
+    function renderMatch() {
+      matchList.innerHTML = `
+        <tr>
+          <td>Final</td>
+          <td>${role === 'admin' ? `<input type="text" id="teamA" value="${match.teamA}" placeholder="Tim A">` : match.teamA || '-'}</td>
+          <td>${role === 'admin' ? `<input type="number" id="scoreA" value="${match.scoreA}" min="0">` : match.scoreA || '-'}</td>
+          <td>VS</td>
+          <td>${role === 'admin' ? `<input type="number" id="scoreB" value="${match.scoreB}" min="0">` : match.scoreB || '-'}</td>
+          <td>${role === 'admin' ? `<input type="text" id="teamB" value="${match.teamB}" placeholder="Tim B">` : match.teamB || '-'}</td>
+        </tr>
+      `;
+
+      if (role === 'admin') {
+        document.getElementById('admin-actions').innerHTML = `
+          <button onclick="saveData()">💾 Simpan Data</button>
+          <button onclick="clearData()">🗑️ Reset Final</button>
+        `;
+      } else {
+        document.getElementById('admin-actions').innerHTML = '';
+      }
+    }
+
+    function saveData() {
+      match = {
+        teamA: document.getElementById('teamA').value.trim(),
+        scoreA: document.getElementById('scoreA').value.trim(),
+        scoreB: document.getElementById('scoreB').value.trim(),
+        teamB: document.getElementById('teamB').value.trim(),
+      };
+      saveMatch();
+      renderMatch();
+      alert('Data Final disimpan!');
+    }
+
+    function clearData() {
+      if (confirm('Hapus data final?')) {
+        match = { teamA: '', teamB: '', scoreA: '', scoreB: '' };
+        saveMatch();
+        renderMatch();
+      }
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    }
+function toDashboard() {
+  window.location.href = 'dashboard.html';
+}
+    renderMatch();
+  </script>
+</body>
+</html>

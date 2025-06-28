@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Champion - Tanamanang Cup</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      overflow: hidden;
+      position: relative;
+    }
+
+    .champion-title {
+      font-size: 2.5rem;
+      text-align: center;
+      color: #00ffff;
+      text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+      margin-top: 30px;
+      animation: glow 2s infinite alternate;
+    }
+
+    .champion-name {
+      font-size: 3rem;
+      text-align: center;
+      color: #ff00ff;
+      text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+      margin: 20px 0;
+      animation: glow 2s infinite alternate;
+    }
+
+    @keyframes glow {
+      from {
+        text-shadow: 0 0 10px #fff, 0 0 20px #fff;
+      }
+      to {
+        text-shadow: 0 0 20px #ff00ff, 0 0 40px #00ffff;
+      }
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+
+    .logout-btn {
+      display: block;
+      margin: 20px auto;
+    }
+  </style>
+</head>
+<body class="neon-bg">
+
+  <h1 class="champion-title">🎉 SELAMAT KEPADA JUARA 🎉</h1>
+  <h2 class="champion-name" id="championName">-</h2>
+
+  <button onclick="logout()" class="logout-btn">Kembali ke Login</button>
+<button onclick="toDashboard()" class="logout-btn">🏠 Kembali ke Dashboard</button>
+  
+  <canvas id="confetti"></canvas>
+
+  <script>
+    // Ambil juara dari localStorage
+    const final = JSON.parse(localStorage.getItem('finalMatch')) || {};
+    document.getElementById('championName').textContent = final.scoreA > final.scoreB ? final.teamA : final.teamB || '-';
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    }
+    function toDashboard() {
+  window.location.href = 'dashboard.html';
+}
+
+    // Confetti animation
+    const canvas = document.getElementById('confetti');
+    const ctx = canvas.getContext('2d');
+    let pieces = [];
+    const colors = ['#ff00ff', '#00ffff', '#ffff00', '#00ff00'];
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    for (let i = 0; i < 150; i++) {
+      pieces.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 5 + 2,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        speed: Math.random() * 3 + 1,
+        angle: Math.random() * 360
+      });
+    }
+
+    function update() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      pieces.forEach(p => {
+        p.y += p.speed;
+        p.angle += 2;
+        if (p.y > canvas.height) p.y = -10;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      requestAnimationFrame(update);
+    }
+
+    update();
+  </script>
+
+</body>
+</html>

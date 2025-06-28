@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Semifinal - Tanamanang Cup</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="neon-bg">
+
+  <div class="neon-card">
+    <h1 class="neon-title">Babak Semifinal - Tanamanang Cup</h1>
+    <button onclick="logout()" class="logout-btn">Logout</button>
+    <button onclick="toDashboard()" class="logout-btn">🏠 Kembali ke Dashboard</button>
+    <div id="role-info" class="neon-subtitle"></div>
+
+    <table id="matchTable">
+      <thead>
+        <tr>
+          <th>Pertandingan</th>
+          <th>Tim A</th>
+          <th>Skor A</th>
+          <th>VS</th>
+          <th>Skor B</th>
+          <th>Tim B</th>
+        </tr>
+      </thead>
+      <tbody id="matchList"></tbody>
+    </table>
+
+    <div id="admin-actions"></div>
+  </div>
+
+  <script>
+    const loggedIn = localStorage.getItem('loggedIn');
+    const role = localStorage.getItem('role');
+
+    if (!loggedIn || loggedIn !== 'true') {
+      window.location.href = 'index.html';
+    }
+
+    document.getElementById('role-info').textContent = `Anda login sebagai: ${role.toUpperCase()}`;
+
+    const matchList = document.getElementById('matchList');
+    let matches = JSON.parse(localStorage.getItem('semifinal')) || Array(2).fill({
+      teamA: '', teamB: '', scoreA: '', scoreB: ''
+    });
+
+    function saveMatches() {
+      localStorage.setItem('semifinal', JSON.stringify(matches));
+    }
+
+    function renderMatches() {
+      matchList.innerHTML = '';
+      matches.forEach((match, i) => {
+        matchList.innerHTML += `
+          <tr>
+            <td>Match ${i + 1}</td>
+            <td>${role === 'admin' ? `<input type="text" id="teamA${i}" value="${match.teamA}" placeholder="Tim A">` : match.teamA || '-'}</td>
+            <td>${role === 'admin' ? `<input type="number" id="scoreA${i}" value="${match.scoreA}" min="0">` : match.scoreA || '-'}</td>
+            <td>VS</td>
+            <td>${role === 'admin' ? `<input type="number" id="scoreB${i}" value="${match.scoreB}" min="0">` : match.scoreB || '-'}</td>
+            <td>${role === 'admin' ? `<input type="text" id="teamB${i}" value="${match.teamB}" placeholder="Tim B">` : match.teamB || '-'}</td>
+          </tr>
+        `;
+      });
+
+      if (role === 'admin') {
+        document.getElementById('admin-actions').innerHTML = `
+          <button onclick="saveData()">💾 Simpan Data</button>
+          <button onclick="clearData()">🗑️ Reset Semua</button>
+        `;
+      } else {
+        document.getElementById('admin-actions').innerHTML = '';
+      }
+    }
+
+    function saveData() {
+      matches = matches.map((_, i) => ({
+        teamA: document.getElementById(`teamA${i}`).value.trim(),
+        scoreA: document.getElementById(`scoreA${i}`).value.trim(),
+        scoreB: document.getElementById(`scoreB${i}`).value.trim(),
+        teamB: document.getElementById(`teamB${i}`).value.trim(),
+      }));
+      saveMatches();
+      renderMatches();
+      alert('Data Semifinal disimpan!');
+    }
+
+    function clearData() {
+      if (confirm('Hapus semua data semifinal?')) {
+        matches = Array(2).fill({ teamA: '', teamB: '', scoreA: '', scoreB: '' });
+        saveMatches();
+        renderMatches();
+      }
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    }
+    function toDashboard() {
+  window.location.href = 'dashboard.html';
+}
+
+    renderMatches();
+  </script>
+</body>
+</html>

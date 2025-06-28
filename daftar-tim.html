@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Daftar Tim - Tanamanang Cup</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="neon-bg">
+  <div class="neon-card">
+    <h1 class="neon-title">Daftar Tim</h1>
+    <div id="role-info"></div>
+    <div id="adminForm"></div>
+    <div id="teamsContainer"></div>
+    <div id="bottomButtons"></div>
+  </div>
+
+  <script>
+    const role = localStorage.getItem('role');
+    if (!localStorage.getItem('loggedIn')) window.location.href = 'index.html';
+    document.getElementById('role-info').textContent = `Anda login sebagai: ${role.toUpperCase()}`;
+
+    let teams = JSON.parse(localStorage.getItem('teams')) || [];
+
+    const adminForm = document.getElementById('adminForm');
+    const teamsContainer = document.getElementById('teamsContainer');
+    const bottomButtons = document.getElementById('bottomButtons');
+
+    // Only admin sees form
+    if (role === 'admin') {
+      adminForm.innerHTML = `
+        <input type="text" id="teamName" placeholder="Nama Tim">
+        <input type="number" id="teamMembers" placeholder="Jumlah Anggota">
+        <button onclick="addTeam()">Tambah Tim</button>
+        <button onclick="clearAll()">Hapus Semua</button>
+      `;
+    }
+
+    function saveTeams() {
+      localStorage.setItem('teams', JSON.stringify(teams));
+    }
+
+    function renderTeams() {
+      if (teams.length === 0) {
+        teamsContainer.innerHTML = `<p>Tidak ada tim yang terdaftar.</p>`;
+        return;
+      }
+
+      teamsContainer.innerHTML = `
+        <h2>Daftar Tim:</h2>
+        <ul>
+          ${teams.map((team, index) => `
+            <li>
+              ${team.name} - ${team.members} anggota
+              ${role === 'admin' ? `
+                <button onclick="editTeam(${index})">Edit</button>
+                <button onclick="deleteTeam(${index})">Hapus</button>
+              ` : ''}
+            </li>
+          `).join('')}
+        </ul>
+      `;
+    }
+
+    function addTeam() {
+      const name = document.getElementById('teamName').value.trim();
+      const members = parseInt(document.getElementById('teamMembers').value.trim(), 10);
+
+      if (!name || isNaN(members) || members <= 0) {
+        alert('Isi nama tim dan jumlah anggota dengan benar!');
+        return;
+      }
+
+      teams.push({ name, members });
+      saveTeams();
+      renderTeams();
+
+      document.getElementById('teamName').value = '';
+      document.getElementById('teamMembers').value = '';
+    }
+
+    function editTeam(index) {
+      const newName = prompt('Nama baru:', teams[index].name);
+      const newMembers = parseInt(prompt('Jumlah anggota baru:', teams[index].members), 10);
+
+      if (!newName || isNaN(newMembers) || newMembers <= 0) {
+        alert('Input tidak valid!');
+        return;
+      }
+
+      teams[index].name = newName;
+      teams[index].members = newMembers;
+      saveTeams();
+      renderTeams();
+    }
+
+    function deleteTeam(index) {
+      if (confirm('Hapus tim ini?')) {
+        teams.splice(index, 1);
+        saveTeams();
+        renderTeams();
+      }
+    }
+
+    function clearAll() {
+      if (confirm('Hapus semua tim?')) {
+        teams = [];
+        saveTeams();
+        renderTeams();
+      }
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    }
+
+    function toDashboard() {
+      window.location.href = 'dashboard.html';
+    }
+
+    // Bottom Buttons
+    bottomButtons.innerHTML = `
+      <button onclick="toDashboard()" class="logout-btn">🏠 Kembali ke Dashboard</button>
+      <button onclick="logout()" class="logout-btn">Logout</button>
+    `;
+
+    renderTeams();
+  </script>
+</body>
+</html>

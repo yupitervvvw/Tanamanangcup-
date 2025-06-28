@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Klasemen - Tanamanang Cup</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="neon-bg">
+  <div class="neon-card">
+    <h1 class="neon-title">Klasemen Grup - Tanamanang Cup</h1>
+    <div id="role-info"></div>
+    <div id="groupsContainer"></div>
+    <div id="bottomButtons"></div>
+  </div>
+
+  <script>
+    const role = localStorage.getItem('role');
+    if (!localStorage.getItem('loggedIn')) window.location.href = 'index.html';
+    document.getElementById('role-info').textContent = `Anda login sebagai: ${role.toUpperCase()}`;
+
+    let groups = JSON.parse(localStorage.getItem('groups')) || Array.from({ length: 10 }, () => []);
+
+    const groupsContainer = document.getElementById('groupsContainer');
+    const bottomButtons = document.getElementById('bottomButtons');
+
+    function saveGroups() {
+      localStorage.setItem('groups', JSON.stringify(groups));
+    }
+
+    function renderGroups() {
+      groupsContainer.innerHTML = '';
+      groups.forEach((group, gIndex) => {
+        groupsContainer.innerHTML += `
+          <div class="neon-subtitle">Grup ${gIndex + 1}</div>
+          ${role === 'admin' && group.length < 5 ? `
+            <input type="text" id="teamName${gIndex}" placeholder="Nama Tim">
+            <button onclick="addTeam(${gIndex})">Tambah Tim</button>
+          ` : ''}
+          <table>
+            <thead>
+              <tr>
+                <th>Nama Tim</th>
+                <th>Main</th>
+                <th>Menang</th>
+                <th>Seri</th>
+                <th>Kalah</th>
+                <th>Gol</th>
+                <th>Kebobolan</th>
+                <th>Point</th>
+                ${role === 'admin' ? '<th>Aksi</th>' : ''}
+              </tr>
+            </thead>
+            <tbody>
+              ${group
+                .sort((a, b) => b.point - a.point)
+                .map((team, i) => `
+                  <tr class="${i >= group.length - 3 ? 'zona-eliminasi' : ''}">
+                    <td>${role === 'admin' ? `<input type="text" id="name${gIndex}_${i}" value="${team.name}">` : team.name}</td>
+                    <td>${team.main}</td>
+                    <td>${team.menang}</td>
+                    <td>${team.seri}</td>
+                    <td>${team.kalah}</td>
+                    <td>${team.gol}</td>
+                    <td>${team.kebobolan}</td>
+                    <td>${team.point}</td>
+                    ${role === 'admin' ? `
+                      <td>
+                        <button onclick="editTeam(${gIndex}, ${i})">💾</button>
+                        <button onclick="deleteTeam(${gIndex}, ${i})">🗑️</button>
+                        <button onclick="updateStats(${gIndex}, ${i})">⚽ Skor</button>
+                      </td>` : ''}
+                  </tr>
+                `).join('')}
+            </tbody>
+          </table>
+          <hr>
+        `;
+      });
+
+      // Render tombol bawah sesuai role
+      bottomButtons.innerHTML = `
+        ${role === 'admin' ? `<button onclick="clearAll()" class="logout-btn">🗑️ Hapus Semua Grup</button>` : ''}
+        <button onclick="toDashboard()" class="logout-btn">🏠 Kembali ke Dashboard</button>
+        <button onclick="logout()" class="logout-btn">Logout</button>
+      `;
+    }
+
+    function addTeam(gIndex) {
+      const nameInput = document.getElementById(`teamName${gIndex}`);
+      const name = nameInput.value.trim();
+      if (!name) {
+        alert('Nama tim tidak boleh kosong!');
+        return;
+      }
+      if (groups[gIndex].length >= 5) {
+        alert('Maksimal 5 tim per grup!');
+        return;
+      }
+      groups[gIndex].push({
+        name,
+        main: 0,
+        menang: 0,
+        seri: 0,
+        kalah: 0,
+        gol: 0,
+        kebobolan: 0,
+        point: 0
+      });
+      saveGroups();
+      renderGroups();
+    }
+
+    function editTeam(gIndex, i) {
+      const newName = document.getElementById(`name${gIndex}_${i}`).value.trim();
+      if (!newName) {
+        alert('Nama tidak boleh kosong!');
+        return;
+      }
+      groups[gIndex][i].name = newName;
+      saveGroups();
+      renderGroups();
+    }
+
+    function deleteTeam(gIndex, i) {
+      if (confirm('Hapus tim ini?')) {
+        groups[gIndex].splice(i, 1);
+        saveGroups();
+        renderGroups();
+      }
+    }
+
+    function updateStats(gIndex, i) {
+      const t = groups[gIndex][i];
+      const addMain = confirm('Tambah pertandingan untuk tim ini? OK untuk Ya');
+      if (!addMain) return;
+      t.main++;
+      const hasil = prompt('Masukkan hasil (menang/seri/kalah):').toLowerCase();
+      if (hasil === 'menang') {
+        t.menang++;
+        t.point += 3;
+      } else if (hasil === 'seri') {
+        t.seri++;
+        t.point += 1;
+      } else if (hasil === 'kalah') {
+        t.kalah++;
+      } else {
+        alert('Input tidak valid!');
+        t.main--;
+        return;
+      }
+      const gol = parseInt(prompt('Jumlah Gol Dicetak?'), 10) || 0;
+      const kebobolan = parseInt(prompt('Jumlah Kebobolan?'), 10) || 0;
+      t.gol += gol;
+      t.kebobolan += kebobolan;
+      saveGroups();
+      renderGroups();
+    }
+
+    function clearAll() {
+      if (confirm('Hapus semua grup dan data?')) {
+        groups = Array.from({ length: 10 }, () => []);
+        saveGroups();
+        renderGroups();
+      }
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    }
+
+    function toDashboard() {
+      window.location.href = 'dashboard.html';
+    }
+
+    renderGroups();
+  </script>
+</body>
+</html>
